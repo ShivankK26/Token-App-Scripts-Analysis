@@ -1,7 +1,7 @@
 const CONFIG = {
   CEX_LIST: ['KuCoin', 'MEXC', 'ASCENDEX', 'GATE', 'BITGET', 'HTX']
 };
-// Main function to update the sheet
+
 function updateCEXData() {
   Logger.log('Starting updateCEXData function');
   const ss = SpreadsheetApp.getActive();
@@ -11,11 +11,11 @@ function updateCEXData() {
   const lastRow = getLastRowWithData(sheet);
   
   // Calculate starting row for new data (lastRow + 2 for spacing)
-  const startRow = lastRow === 1 ? 2 : lastRow + 2;
+  const startRow = lastRow === 1 ? 2 : lastRow + 1;
   
   // Get current date
   const currentDate = new Date();
-  const formattedDate = Utilities.formatDate(currentDate, 'GMT', 'yyyy-MM-dd');
+  const formattedDate = Utilities.formatDate(currentDate, 'GMT', 'yyyy-MM-dd HH:mm');
   
   // Prepare data for each CEX
   const newData = [];
@@ -25,43 +25,28 @@ function updateCEXData() {
     newData.push([
       formattedDate,
       cex,
-      rowData.plusTwoPercent,
-      rowData.minusTwoPercent,
-      rowData.spread,
-      rowData.volume
+      rowData.plusTwoPercent.toFixed(3),
+      rowData.minusTwoPercent.toFixed(3),
+      rowData.spread.toFixed(3),
+      rowData.volume.toFixed(3)
     ]);
   }
   
   // Write data to sheet
   sheet.getRange(startRow, 1, newData.length, 6).setValues(newData);
+  var range = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn());
   
-  // Format the new rows
-  formatNewRows(sheet, startRow, newData.length);
+  // Sort by second column (ascending), then by first column (descending)
+  range.sort([
+    {column: 1, ascending: false},
+    {column: 6, ascending: false}
+  ]);
+
+  createSummary()
+  cleanUpData()
+
 }
-// Function to create a new sheet if it doesn't exist
-function createNewSheet(spreadsheet) {
-  const sheet = spreadsheet.insertSheet('CEX Data');
-  
-  // Set up headers
-  const headers = ['Date', 'CEX', '+2%', '-2%', 'Spread', 'Volume'];
-  sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-  
-  // Format headers
-  const headerRange = sheet.getRange(1, 1, 1, headers.length);
-  headerRange.setBackground('#4a86e8');
-  headerRange.setFontColor('white');
-  headerRange.setFontWeight('bold');
-  
-  // Set column widths
-  sheet.setColumnWidth(1, 100);  // Date
-  sheet.setColumnWidth(2, 100);  // CEX
-  sheet.setColumnWidth(3, 80);   // +2%
-  sheet.setColumnWidth(4, 80);   // -2%
-  sheet.setColumnWidth(5, 80);   // Spread
-  sheet.setColumnWidth(6, 100);  // Volume
-  
-  return sheet;
-}
+
 // Function to get the last row with data
 function getLastRowWithData(sheet) {
   const lastRow = sheet.getLastRow();
@@ -148,13 +133,13 @@ function fetchAscendEXData(symbol = 'ROUTE/USDT') {
     Logger.log('Plus Two Percent:', totalValues["+2%"]);
     Logger.log('Minus Two Percent:', totalValues["-2%"]);
     Logger.log('Spread:', spread);
-    Logger.log('Volume:', volume);
+    Logger.log('Volume:', volume * lastTradedPrice);
     // Return processed data
     return {
       plusTwoPercent: parseFloat(totalValues["+2%"].toFixed(2)),
       minusTwoPercent: parseFloat(totalValues["-2%"].toFixed(2)),
       spread: parseFloat(spread),
-      volume: volume
+      volume: volume * lastTradedPrice
     };
   } catch (error) {
     Logger.log('Error fetching AscendEX data: ' + error);
@@ -226,11 +211,6 @@ function fetchMEXCData(symbol = 'ROUTEUSDT') {
     // Calculate spread using bid and ask from ticker data
     const spread = ((parseFloat(tickerData.askPrice) - parseFloat(tickerData.bidPrice)) / 
                     parseFloat(tickerData.bidPrice)) * 100;
-    Logger.log('Calculated values:');
-    Logger.log('Plus Two Percent:', totalValues["+2%"]);
-    Logger.log('Minus Two Percent:', totalValues["-2%"]);
-    Logger.log('Spread:', spread);
-    Logger.log('Volume:', parseFloat(tickerData.quoteVolume));
     // Return processed data
     return {
       plusTwoPercent: totalValues["+2%"],
@@ -422,7 +402,6 @@ function fetchGateData(symbol = 'ROUTE_USDT') {
   }
 }
 
-
 function fetchBitgetData(symbol = 'ROUTEUSDT') {
   try {
     Logger.log('Starting Bitget data fetch for symbol: ' + symbol);
@@ -458,7 +437,7 @@ function fetchBitgetData(symbol = 'ROUTEUSDT') {
     Logger.log('Orderbook Data: ' + JSON.stringify(orderbookData));
 
     // Calculate depth values
-    const lastTradedPrice = parseFloat(tickerV2Data.data.close);
+    const lastTradedPrice = parseFloat(tickerV2Data.data[0].lastPr);
     const ranges = {
       "+2%": lastTradedPrice * 1.02,
       "-2%": lastTradedPrice * 0.98
@@ -476,10 +455,17 @@ function fetchBitgetData(symbol = 'ROUTEUSDT') {
       const value = price * quantity;
 
       // Calculate totals for ranges
-      if (price <= ranges["-2%"]) {
+      if (price >= ranges["-2%"]) {
         totalValues["-2%"] += value;
       }
-      if (price >= ranges["+2%"]) {
+    });
+
+    // Process bids for both +2% and -2% depth calculation
+    orderbookData.data.asks.forEach(ask => {
+      const price = parseFloat(ask[0]);
+      const quantity = parseFloat(ask[1]);
+      const value = price * quantity;
+      if (price <= ranges["+2%"]) {
         totalValues["+2%"] += value;
       }
     });
@@ -489,12 +475,6 @@ function fetchBitgetData(symbol = 'ROUTEUSDT') {
     const askPrice = parseFloat(tickerV2Data.data[0].askPr);
     const bidPrice = parseFloat(tickerV2Data.data[0].bidPr);
     const spread = ((askPrice - bidPrice) / bidPrice * 100).toFixed(2);
-
-    Logger.log('Calculated values:');
-    Logger.log('Plus Two Percent:', totalValues["+2%"]);
-    Logger.log('Minus Two Percent:', totalValues["-2%"]);
-    Logger.log('Spread:', spread);
-    Logger.log('Volume:', volume);
 
     // Return processed data
     return {
@@ -561,10 +541,17 @@ function fetchHTXData(symbol = 'routeusdt') {
       const value = price * quantity;
 
       // Calculate totals for ranges
-      if (price <= ranges["-2%"]) {
+      if (price >= ranges["-2%"]) {
         totalValues["-2%"] += value;
       }
-      if (price >= ranges["+2%"]) {
+    });
+
+    orderbookData.tick.asks.forEach(ask => {
+      const price = parseFloat(ask[0]);
+      const quantity = parseFloat(ask[1]);
+      const value = price * quantity;
+
+      if (price <= ranges["+2%"]) {
         totalValues["+2%"] += value;
       }
     });
@@ -606,7 +593,6 @@ function fetchHTXData(symbol = 'routeusdt') {
     };
   }
 }
-
 
 function getCEXData(cexName) {
   Logger.log('Getting data for CEX: ' + cexName);
@@ -655,6 +641,7 @@ function getCEXData(cexName) {
     };
   }
 }
+
 // Test function to debug MEXC API
 function testMEXCAPI() {
   Logger.log('Starting MEXC API test');
@@ -667,26 +654,6 @@ function testMEXCAPI() {
     Logger.log('+2%:', data.plusTwoPercent.toFixed(2));
   } catch (error) {
     Logger.log('Test error: ' + error);
-  }
-}
-
-// Function to format new rows
-function formatNewRows(sheet, startRow, numRows) {
-  const range = sheet.getRange(startRow, 1, numRows, 6);
-  
-  // Create format array for all rows
-  const formats = Array(numRows).fill(['yyyy-mm-dd', '@', '#,##0.00', '#,##0.00', '#,##0.00', '#,##0']);
-  
-  // Set number formats
-  range.setNumberFormats(formats);
-  
-  // Set borders
-  range.setBorder(true, true, true, true, true, true);
-  
-  // Alternate row colors
-  for (let i = 0; i < numRows; i++) {
-    const rowRange = sheet.getRange(startRow + i, 1, 1, 6);
-    rowRange.setBackground(i % 2 === 0 ? '#f3f3f3' : '#ffffff');
   }
 }
 
