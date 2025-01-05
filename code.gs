@@ -5,7 +5,7 @@ const CONFIG = {
 function updateCEXData() {
   Logger.log('Starting updateCEXData function');
   const ss = SpreadsheetApp.getActive();
-  const sheet = ss.getSheetByName('CEX Hourly Average') || createNewSheet(ss);
+  const sheet = ss.getSheetByName('CEX Data') || createNewSheet(ss);
   
   // Get the last row with data
   const lastRow = getLastRowWithData(sheet);
