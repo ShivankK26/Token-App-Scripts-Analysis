@@ -5,7 +5,7 @@ const CONFIG = {
 function updateCEXData() {
   Logger.log('Starting updateCEXData function');
   const ss = SpreadsheetApp.getActive();
-  const sheet = ss.getSheetByName('CEX Data') || createNewSheet(ss);
+  const sheet = ss.getSheetByName('CEX Hourly Average');
   
   // Get the last row with data
   const lastRow = getLastRowWithData(sheet);
@@ -592,6 +592,82 @@ function fetchHTXData(symbol = 'routeusdt') {
       volume: 0
     };
   }
+}
+
+function sendBitgetHourlyUpdate() {
+  try {
+    // Fetch Bitget data
+    const bitgetData = fetchBitgetData('ROUTEUSDT');
+    
+    // Format the message with metrics
+    let message = {
+      "text": "Bitget Hourly Update",
+      "blocks": [
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": ":chart_with_upwards_trend: *Bitget Hourly Market Update* :chart_with_upwards_trend:"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": `*Current Metrics:*\n
+• Spread: ${bitgetData.spread.toFixed(3)}%
+• +2% Depth: $${bitgetData.plusTwoPercent.toFixed(2)}
+• -2% Depth: $${bitgetData.minusTwoPercent.toFixed(2)}
+• 24h Volume: $${bitgetData.volume.toLocaleString()}`
+          }
+        },
+        {
+          "type": "context",
+          "elements": [
+            {
+              "type": "mrkdwn",
+              "text": `Last updated: ${new Date().toUTCString()}`
+            }
+          ]
+        }
+      ]
+    };
+
+    // Send to Slack
+    const webhook = "SLACK_WEBHOOK_URL";
+    var options = {
+      "method": "post",
+      "contentType": "application/json",
+      "muteHttpExceptions": true,
+      "payload": JSON.stringify(message)
+    };
+
+    UrlFetchApp.fetch(webhook, options);
+    Logger.log('Bitget hourly update sent successfully');
+    
+  } catch(error) {
+    Logger.log('Error sending Bitget hourly update: ' + error);
+  }
+}
+
+// Create a trigger to run this function hourly
+function createHourlyTrigger() {
+  // Delete any existing triggers with the same function name
+  const triggers = ScriptApp.getProjectTriggers();
+  triggers.forEach(trigger => {
+    if(trigger.getHandlerFunction() === 'sendBitgetHourlyUpdate') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+  
+  // Create new hourly trigger
+  ScriptApp.newTrigger('sendBitgetHourlyUpdate')
+      .timeBased()
+      .everyHours(1)
+      .create();
 }
 
 function getCEXData(cexName) {
