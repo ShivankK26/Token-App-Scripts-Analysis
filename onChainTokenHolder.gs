@@ -16,7 +16,7 @@ const TOKENS = {
 
 // Bitquery API configuration
 const BITQUERY_API = 'https://streaming.bitquery.io/graphql';
-const BITQUERY_API_KEY = 'f1aba10f-0e00-4845-8c57-274d98dc766b'; // Replace with your API key
+const BITQUERY_API_KEY = 'API_KEY'; // Replace with your API key
 
 // Function to create GraphQL query
 function createQuery(network, address, date) {
