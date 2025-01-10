@@ -637,7 +637,7 @@ function sendBitgetHourlyUpdate() {
     };
 
     // Send to Slack
-    const webhook = "SLACK_WEBHOOK_URL";
+    const webhook = "WEBHOOK";
     var options = {
       "method": "post",
       "contentType": "application/json",
