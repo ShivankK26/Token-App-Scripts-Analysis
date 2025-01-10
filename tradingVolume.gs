@@ -1,3 +1,6 @@
+// Configuration
+
+
 // Function to fetch KuCoin volume
 function fetchKuCoinVolume() {
   try {
