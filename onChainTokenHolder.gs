@@ -5,18 +5,17 @@ const TOKENS = {
         v1: "0x16eccfdbb4ee1a85a33f3a9b21175cd7ae753db4",
         v2: "0x60F67E1015b3f069DD4358a78c38f83fE3a667A9"
     },
-    polygon: {
-        v1: "0x16eccfdbb4ee1a85a33f3a9b21175cd7ae753db4",
-        v2: "0x93890f346C5D02C3863a06657bc72555dC72c527"
-    },
     bsc: {
         v1: "0xfD2700c51812753215754De9EC51Cdd42Bf725B9",
+    },
+    router: {
+        v2: "",
     }
 };
 
 // Bitquery API configuration
 const BITQUERY_API = 'https://streaming.bitquery.io/graphql';
-const BITQUERY_API_KEY = 'API_KEY'; // Replace with your API key
+const BITQUERY_API_KEY = 'f1aba10f-0e00-4845-8c57-274d98dc766b'; // Replace with your API key
 
 // Function to create GraphQL query
 function createQuery(network, address, date) {
