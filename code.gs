@@ -637,7 +637,7 @@ function sendBitgetHourlyUpdate() {
     };
 
     // Send to Slack
-    const webhook = "WEBHOOK";
+    const webhook = "";
     var options = {
       "method": "post",
       "contentType": "application/json",
@@ -650,6 +650,301 @@ function sendBitgetHourlyUpdate() {
     
   } catch(error) {
     Logger.log('Error sending Bitget hourly update: ' + error);
+  }
+}
+
+function sendHTXHourlyUpdate() {
+  try {
+    // Fetch Bitget data
+    const HTXData = fetchHTXData('routeusdt');
+    
+    // Format the message with metrics
+    let message = {
+      "text": "HTX Hourly Update",
+      "blocks": [
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": ":chart_with_upwards_trend: *HTX Hourly Market Update* :chart_with_upwards_trend:"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": `*Current Metrics:*\n
+• Spread: ${HTXData.spread.toFixed(3)}%
+• +2% Depth: $${HTXData.plusTwoPercent.toFixed(2)}
+• -2% Depth: $${HTXData.minusTwoPercent.toFixed(2)}
+• 24h Volume: $${HTXData.volume.toLocaleString()}`
+          }
+        },
+        {
+          "type": "context",
+          "elements": [
+            {
+              "type": "mrkdwn",
+              "text": `Last updated: ${new Date().toUTCString()}`
+            }
+          ]
+        }
+      ]
+    };
+
+    // Send to Slack
+    const webhook = "";
+    var options = {
+      "method": "post",
+      "contentType": "application/json",
+      "muteHttpExceptions": true,
+      "payload": JSON.stringify(message)
+    };
+
+    UrlFetchApp.fetch(webhook, options);
+    Logger.log('HTX hourly update sent successfully');
+    
+  } catch(error) {
+    Logger.log('Error sending HTX hourly update: ' + error);
+  }
+}
+
+function sendMEXCHourlyUpdate() {
+  try {
+    // Fetch Bitget data
+    const mexcData = fetchMEXCData('ROUTEUSDT');
+    
+    // Format the message with metrics
+    let message = {
+      "text": "MEXC Hourly Update",
+      "blocks": [
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": ":chart_with_upwards_trend: *MEXC Hourly Market Update* :chart_with_upwards_trend:"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": `*Current Metrics:*\n
+• Spread: ${mexcData.spread.toFixed(3)}%
+• +2% Depth: $${mexcData.plusTwoPercent.toFixed(2)}
+• -2% Depth: $${mexcData.minusTwoPercent.toFixed(2)}
+• 24h Volume: $${mexcData.volume.toLocaleString()}`
+          }
+        },
+        {
+          "type": "context",
+          "elements": [
+            {
+              "type": "mrkdwn",
+              "text": `Last updated: ${new Date().toUTCString()}`
+            }
+          ]
+        }
+      ]
+    };
+
+    // Send to Slack
+    const webhook = "";
+    var options = {
+      "method": "post",
+      "contentType": "application/json",
+      "muteHttpExceptions": true,
+      "payload": JSON.stringify(message)
+    };
+
+    UrlFetchApp.fetch(webhook, options);
+    Logger.log('MEXC hourly update sent successfully');
+    
+  } catch(error) {
+    Logger.log('Error sending MEXC hourly update: ' + error);
+  }
+}
+
+function sendKucoinHourlyUpdate() {
+  try {
+    // Fetch Bitget data
+    const kuCoinData = fetchKuCoinData('ROUTE-USDT');
+    
+    // Format the message with metrics
+    let message = {
+      "text": "Kucoin Hourly Update",
+      "blocks": [
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": ":chart_with_upwards_trend: *Kucoin Hourly Market Update* :chart_with_upwards_trend:"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": `*Current Metrics:*\n
+• Spread: ${kuCoinData.spread.toFixed(3)}%
+• +2% Depth: $${kuCoinData.plusTwoPercent.toFixed(2)}
+• -2% Depth: $${kuCoinData.minusTwoPercent.toFixed(2)}
+• 24h Volume: $${kuCoinData.volume.toLocaleString()}`
+          }
+        },
+        {
+          "type": "context",
+          "elements": [
+            {
+              "type": "mrkdwn",
+              "text": `Last updated: ${new Date().toUTCString()}`
+            }
+          ]
+        }
+      ]
+    };
+
+    // Send to Slack
+    const webhook = "";
+    var options = {
+      "method": "post",
+      "contentType": "application/json",
+      "muteHttpExceptions": true,
+      "payload": JSON.stringify(message)
+    };
+
+    UrlFetchApp.fetch(webhook, options);
+    Logger.log('Kucoin hourly update sent successfully');
+    
+  } catch(error) {
+    Logger.log('Error sending Kucoin hourly update: ' + error);
+  }
+}
+
+function sendASCENDEXHourlyUpdate() {
+  try {
+    // Fetch Bitget data
+    const ascendexData = fetchAscendEXData('ROUTE/USDT');
+    
+    // Format the message with metrics
+    let message = {
+      "text": "ASCENDEX Hourly Update",
+      "blocks": [
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": ":chart_with_upwards_trend: *ASCENDEX Hourly Market Update* :chart_with_upwards_trend:"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": `*Current Metrics:*\n
+• Spread: ${ascendexData.spread.toFixed(3)}%
+• +2% Depth: $${ascendexData.plusTwoPercent.toFixed(2)}
+• -2% Depth: $${ascendexData.minusTwoPercent.toFixed(2)}
+• 24h Volume: $${ascendexData.volume.toLocaleString()}`
+          }
+        },
+        {
+          "type": "context",
+          "elements": [
+            {
+              "type": "mrkdwn",
+              "text": `Last updated: ${new Date().toUTCString()}`
+            }
+          ]
+        }
+      ]
+    };
+
+    // Send to Slack
+    const webhook = "";
+    var options = {
+      "method": "post",
+      "contentType": "application/json",
+      "muteHttpExceptions": true,
+      "payload": JSON.stringify(message)
+    };
+
+    UrlFetchApp.fetch(webhook, options);
+    Logger.log('ASCENDEX hourly update sent successfully');
+    
+  } catch(error) {
+    Logger.log('Error sending ASCENDEX hourly update: ' + error);
+  }
+}
+
+function sendGATEHourlyUpdate() {
+  try {
+    // Fetch Bitget data
+    const gateData = fetchGateData('ROUTE_USDT');
+    
+    // Format the message with metrics
+    let message = {
+      "text": "GATE Hourly Update",
+      "blocks": [
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": ":chart_with_upwards_trend: *GATE Hourly Market Update* :chart_with_upwards_trend:"
+          }
+        },
+        {
+          "type": "divider"
+        },
+        {
+          "type": "section",
+          "text": {
+            "type": "mrkdwn",
+            "text": `*Current Metrics:*\n
+• Spread: ${gateData.spread.toFixed(3)}%
+• +2% Depth: $${gateData.plusTwoPercent.toFixed(2)}
+• -2% Depth: $${gateData.minusTwoPercent.toFixed(2)}
+• 24h Volume: $${gateData.volume.toLocaleString()}`
+          }
+        },
+        {
+          "type": "context",
+          "elements": [
+            {
+              "type": "mrkdwn",
+              "text": `Last updated: ${new Date().toUTCString()}`
+            }
+          ]
+        }
+      ]
+    };
+
+    // Send to Slack
+    const webhook = "";
+    var options = {
+      "method": "post",
+      "contentType": "application/json",
+      "muteHttpExceptions": true,
+      "payload": JSON.stringify(message)
+    };
+
+    UrlFetchApp.fetch(webhook, options);
+    Logger.log('GATE hourly update sent successfully');
+    
+  } catch(error) {
+    Logger.log('Error sending GATE hourly update: ' + error);
   }
 }
 
