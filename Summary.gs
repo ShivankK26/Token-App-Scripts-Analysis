@@ -128,4 +128,3 @@ function cleanUpData() {
     sheet.deleteRow(rowsToDelete[j]);
   }
 }
-
