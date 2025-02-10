@@ -109,7 +109,7 @@ function fetchAscendEXData(symbol = 'ROUTE/USDT') {
       const quantity = parseFloat(bid[1]);
       const value = price * quantity;
       // Calculate totals for ranges
-      if (price <= ranges["-2%"]) {
+      if (price >= ranges["-2%"]) {
         totalValues["-2%"] += value;
       }
     });
@@ -119,7 +119,7 @@ function fetchAscendEXData(symbol = 'ROUTE/USDT') {
       const quantity = parseFloat(ask[1]);
       const value = price * quantity;
       // Calculate totals for ranges
-      if (price >= ranges["+2%"]) {
+      if (price <= ranges["+2%"]) {
         totalValues["+2%"] += value;
       }
     });
@@ -130,10 +130,10 @@ function fetchAscendEXData(symbol = 'ROUTE/USDT') {
     // Get volume from ticker data
     const volume = parseFloat(tickerData.data.volume);
     Logger.log('Calculated values:');
-    Logger.log('Plus Two Percent:', totalValues["+2%"]);
-    Logger.log('Minus Two Percent:', totalValues["-2%"]);
-    Logger.log('Spread:', spread);
-    Logger.log('Volume:', volume * lastTradedPrice);
+    Logger.log('Plus Two Percent:' + totalValues["+2%"]);
+    Logger.log('Minus Two Percent:'+ totalValues["-2%"]);
+    Logger.log('Spread:'+ spread);
+    Logger.log('Volume:'+ volume * lastTradedPrice);
     // Return processed data
     return {
       plusTwoPercent: parseFloat(totalValues["+2%"].toFixed(2)),
@@ -515,7 +515,7 @@ function fetchHTXData(symbol = 'routeusdt') {
 
     // Get orderbook data
     const orderbookResponse = UrlFetchApp.fetch(
-      `https://api.huobi.pro/market/depth?symbol=${symbol}&depth=5&type=step0`,
+      `https://api.huobi.pro/market/depth?symbol=${symbol}&depth=20&type=step0`,
       tickerOptions
     );
     Logger.log('Orderbook Response Status: ' + orderbookResponse.getResponseCode());
