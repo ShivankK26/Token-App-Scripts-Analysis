@@ -637,7 +637,7 @@ function sendBitgetHourlyUpdate() {
     };
 
     // Send to Slack
-    const webhook = "";
+    const webhook = "https://hooks.slack.com/services/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";
     var options = {
       "method": "post",
       "contentType": "application/json",
@@ -696,7 +696,7 @@ function sendHTXHourlyUpdate() {
     };
 
     // Send to Slack
-    const webhook = "";
+    const webhook = "https://hooks.slack.com/services/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";
     var options = {
       "method": "post",
       "contentType": "application/json",
@@ -714,7 +714,7 @@ function sendHTXHourlyUpdate() {
 
 function sendMEXCHourlyUpdate() {
   try {
-    // Fetch Bitget data
+    // Fetch MEXC data
     const mexcData = fetchMEXCData('ROUTEUSDT');
     
     // Format the message with metrics
@@ -754,8 +754,18 @@ function sendMEXCHourlyUpdate() {
       ]
     };
 
+    // Check for alert conditions
+    let alertMessage = null;
+    if (mexcData.plusTwoPercent < 1000 || mexcData.minusTwoPercent < 1000) {
+      alertMessage = `<@U078VJU5HQX> Alert: +2% Depth ($${mexcData.plusTwoPercent.toFixed(2)}) or -2% Depth ($${mexcData.minusTwoPercent.toFixed(2)}) is below $1000.`;
+    } else if (mexcData.volume < 150000) {
+      alertMessage = `<@U078VJU5HQX> Alert: 24h Volume ($${mexcData.volume.toLocaleString()}) is below $150,000.`;
+    } else if (mexcData.spread > 0.6) {
+      alertMessage = `<@U078VJU5HQX> Alert: Spread (${mexcData.spread.toFixed(3)}%) is above 0.6%.`;
+    }
+
     // Send to Slack
-    const webhook = "";
+    const webhook = "https://hooks.slack.com/services/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";
     var options = {
       "method": "post",
       "contentType": "application/json",
@@ -765,6 +775,32 @@ function sendMEXCHourlyUpdate() {
 
     UrlFetchApp.fetch(webhook, options);
     Logger.log('MEXC hourly update sent successfully');
+
+    // Send alert if conditions are met
+    if (alertMessage) {
+      let alert = {
+        "text": alertMessage,
+        "blocks": [
+          {
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": alertMessage
+            }
+          }
+        ]
+      };
+
+      var alertOptions = {
+        "method": "post",
+        "contentType": "application/json",
+        "muteHttpExceptions": true,
+        "payload": JSON.stringify(alert)
+      };
+
+      UrlFetchApp.fetch(webhook, alertOptions);
+      Logger.log('Alert sent successfully');
+    }
     
   } catch(error) {
     Logger.log('Error sending MEXC hourly update: ' + error);
@@ -776,45 +812,83 @@ function sendKucoinHourlyUpdate() {
     // Fetch Bitget data
     const kuCoinData = fetchKuCoinData('ROUTE-USDT');
     
+    // Check alert conditions
+    const alerts = [];
+    if (kuCoinData.plusTwoPercent < 2000 || kuCoinData.minusTwoPercent < 2000) {
+      alerts.push("⚠️ Depth Alert: 2% depth has fallen below $2,000");
+    }
+    if (kuCoinData.volume < 150000) {
+      alerts.push("⚠️ Volume Alert: 24h volume has fallen below $150,000");
+    }
+    if (kuCoinData.spread > 0.4) {
+      alerts.push("⚠️ Spread Alert: Spread has gone above 0.4%");
+    }
+
+    // Create alert message if conditions are met
+    let alertBlock = null;
+    if (alerts.length > 0) {
+      alertBlock = {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": `<@U078VJU5HQX>\n${alerts.join('\n')}`
+        }
+      };
+    }
+    
     // Format the message with metrics
     let message = {
-      "text": "Kucoin Hourly Update",
+      "text": alerts.length > 0 ? "🚨 Kucoin Alert" : "Kucoin Hourly Update",
       "blocks": [
         {
           "type": "section",
           "text": {
             "type": "mrkdwn",
-            "text": ":chart_with_upwards_trend: *Kucoin Hourly Market Update* :chart_with_upwards_trend:"
+            "text": alerts.length > 0 
+              ? "🚨 *Kucoin Alert Update* 🚨"
+              : ":chart_with_upwards_trend: *Kucoin Hourly Market Update* :chart_with_upwards_trend:"
           }
         },
         {
           "type": "divider"
-        },
-        {
-          "type": "section",
-          "text": {
-            "type": "mrkdwn",
-            "text": `*Current Metrics:*\n
-• Spread: ${kuCoinData.spread.toFixed(3)}%
-• +2% Depth: $${kuCoinData.plusTwoPercent.toFixed(2)}
-• -2% Depth: $${kuCoinData.minusTwoPercent.toFixed(2)}
-• 24h Volume: $${kuCoinData.volume.toLocaleString()}`
-          }
-        },
-        {
-          "type": "context",
-          "elements": [
-            {
-              "type": "mrkdwn",
-              "text": `Last updated: ${new Date().toUTCString()}`
-            }
-          ]
         }
       ]
     };
 
+    // Add alert block if there are alerts
+    if (alertBlock) {
+      message.blocks.push(alertBlock);
+      message.blocks.push({
+        "type": "divider"
+      });
+    }
+
+    // Add metrics block
+    message.blocks.push({
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": `*Current Metrics:*\n
+• Spread: ${kuCoinData.spread.toFixed(3)}%
+• +2% Depth: $${kuCoinData.plusTwoPercent.toFixed(2)}
+• -2% Depth: $${kuCoinData.minusTwoPercent.toFixed(2)}
+• 24h Volume: $${kuCoinData.volume.toLocaleString()}`
+      }
+    });
+
+    // Add timestamp
+    message.blocks.push({
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": `Last updated: ${new Date().toUTCString()}`
+        }
+      ]
+    });
+
     // Send to Slack
-    const webhook = "";
+    const webhook = "https://hooks.slack.com/services/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";
     var options = {
       "method": "post",
       "contentType": "application/json",
@@ -823,10 +897,10 @@ function sendKucoinHourlyUpdate() {
     };
 
     UrlFetchApp.fetch(webhook, options);
-    Logger.log('Kucoin hourly update sent successfully');
+    Logger.log('Kucoin update sent successfully');
     
   } catch(error) {
-    Logger.log('Error sending Kucoin hourly update: ' + error);
+    Logger.log('Error sending Kucoin update: ' + error);
   }
 }
 
@@ -873,7 +947,7 @@ function sendASCENDEXHourlyUpdate() {
     };
 
     // Send to Slack
-    const webhook = "";
+    const webhook = "https://hooks.slack.com/services/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";
     var options = {
       "method": "post",
       "contentType": "application/json",
@@ -932,7 +1006,7 @@ function sendGATEHourlyUpdate() {
     };
 
     // Send to Slack
-    const webhook = "";
+    const webhook = "https://hooks.slack.com/services/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";
     var options = {
       "method": "post",
       "contentType": "application/json",
