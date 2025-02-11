@@ -658,45 +658,83 @@ function sendHTXHourlyUpdate() {
     // Fetch Bitget data
     const HTXData = fetchHTXData('routeusdt');
     
+    // Check alert conditions
+    const alerts = [];
+    if (HTXData.plusTwoPercent < 800 || HTXData.minusTwoPercent < 800) {
+      alerts.push("⚠️ Depth Alert: 2% depth has fallen below $800");
+    }
+    if (HTXData.volume < 100000) {
+      alerts.push("⚠️ Volume Alert: 24h volume has fallen below $100,000");
+    }
+    if (HTXData.spread > 0.75) {
+      alerts.push("⚠️ Spread Alert: Spread has gone above 0.75%");
+    }
+
+    // Create alert message if conditions are met
+    let alertBlock = null;
+    if (alerts.length > 0) {
+      alertBlock = {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": `<@U078VJU5HQX>\n${alerts.join('\n')}`
+        }
+      };
+    }
+    
     // Format the message with metrics
     let message = {
-      "text": "HTX Hourly Update",
+      "text": alerts.length > 0 ? "🚨 HTX Alert" : "HTX Hourly Update",
       "blocks": [
         {
           "type": "section",
           "text": {
             "type": "mrkdwn",
-            "text": ":chart_with_upwards_trend: *HTX Hourly Market Update* :chart_with_upwards_trend:"
+            "text": alerts.length > 0 
+              ? "🚨 *HTX Alert Update* 🚨"
+              : ":chart_with_upwards_trend: *HTX Hourly Market Update* :chart_with_upwards_trend:"
           }
         },
         {
           "type": "divider"
-        },
-        {
-          "type": "section",
-          "text": {
-            "type": "mrkdwn",
-            "text": `*Current Metrics:*\n
-• Spread: ${HTXData.spread.toFixed(3)}%
-• +2% Depth: $${HTXData.plusTwoPercent.toFixed(2)}
-• -2% Depth: $${HTXData.minusTwoPercent.toFixed(2)}
-• 24h Volume: $${HTXData.volume.toLocaleString()}`
-          }
-        },
-        {
-          "type": "context",
-          "elements": [
-            {
-              "type": "mrkdwn",
-              "text": `Last updated: ${new Date().toUTCString()}`
-            }
-          ]
         }
       ]
     };
 
+    // Add alert block if there are alerts
+    if (alertBlock) {
+      message.blocks.push(alertBlock);
+      message.blocks.push({
+        "type": "divider"
+      });
+    }
+
+    // Add metrics block
+    message.blocks.push({
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": `*Current Metrics:*\n
+• Spread: ${HTXData.spread.toFixed(3)}%
+• +2% Depth: $${HTXData.plusTwoPercent.toFixed(2)}
+• -2% Depth: $${HTXData.minusTwoPercent.toFixed(2)}
+• 24h Volume: $${HTXData.volume.toLocaleString()}`
+      }
+    });
+
+    // Add timestamp
+    message.blocks.push({
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": `Last updated: ${new Date().toUTCString()}`
+        }
+      ]
+    });
+
     // Send to Slack
-    const webhook = "https://hooks.slack.com/services/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";
+    const webhook = "https://hooks.slack.com/services/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";
     var options = {
       "method": "post",
       "contentType": "application/json",
@@ -705,67 +743,95 @@ function sendHTXHourlyUpdate() {
     };
 
     UrlFetchApp.fetch(webhook, options);
-    Logger.log('HTX hourly update sent successfully');
+    Logger.log('HTX update sent successfully');
     
   } catch(error) {
-    Logger.log('Error sending HTX hourly update: ' + error);
+    Logger.log('Error sending HTX update: ' + error);
   }
 }
 
 function sendMEXCHourlyUpdate() {
   try {
-    // Fetch MEXC data
+    // Fetch Bitget data
     const mexcData = fetchMEXCData('ROUTEUSDT');
+    
+    // Check alert conditions
+    const alerts = [];
+    if (mexcData.plusTwoPercent < 1000 || mexcData.minusTwoPercent < 1000) {
+      alerts.push("⚠️ Depth Alert: 2% depth has fallen below $1,000");
+    }
+    if (mexcData.volume < 150000) {
+      alerts.push("⚠️ Volume Alert: 24h volume has fallen below $150,000");
+    }
+    if (mexcData.spread > 0.6) {
+      alerts.push("⚠️ Spread Alert: Spread has gone above 0.6%");
+    }
+
+    // Create alert message if conditions are met
+    let alertBlock = null;
+    if (alerts.length > 0) {
+      alertBlock = {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": `<@U078VJU5HQX>\n${alerts.join('\n')}`
+        }
+      };
+    }
     
     // Format the message with metrics
     let message = {
-      "text": "MEXC Hourly Update",
+      "text": alerts.length > 0 ? "🚨 MEXC Alert" : "MEXC Hourly Update",
       "blocks": [
         {
           "type": "section",
           "text": {
             "type": "mrkdwn",
-            "text": ":chart_with_upwards_trend: *MEXC Hourly Market Update* :chart_with_upwards_trend:"
+            "text": alerts.length > 0 
+              ? "🚨 *MEXC Alert Update* 🚨"
+              : ":chart_with_upwards_trend: *MEXC Hourly Market Update* :chart_with_upwards_trend:"
           }
         },
         {
           "type": "divider"
-        },
-        {
-          "type": "section",
-          "text": {
-            "type": "mrkdwn",
-            "text": `*Current Metrics:*\n
-• Spread: ${mexcData.spread.toFixed(3)}%
-• +2% Depth: $${mexcData.plusTwoPercent.toFixed(2)}
-• -2% Depth: $${mexcData.minusTwoPercent.toFixed(2)}
-• 24h Volume: $${mexcData.volume.toLocaleString()}`
-          }
-        },
-        {
-          "type": "context",
-          "elements": [
-            {
-              "type": "mrkdwn",
-              "text": `Last updated: ${new Date().toUTCString()}`
-            }
-          ]
         }
       ]
     };
 
-    // Check for alert conditions
-    let alertMessage = null;
-    if (mexcData.plusTwoPercent < 1000 || mexcData.minusTwoPercent < 1000) {
-      alertMessage = `<@U078VJU5HQX> Alert: +2% Depth ($${mexcData.plusTwoPercent.toFixed(2)}) or -2% Depth ($${mexcData.minusTwoPercent.toFixed(2)}) is below $1000.`;
-    } else if (mexcData.volume < 150000) {
-      alertMessage = `<@U078VJU5HQX> Alert: 24h Volume ($${mexcData.volume.toLocaleString()}) is below $150,000.`;
-    } else if (mexcData.spread > 0.6) {
-      alertMessage = `<@U078VJU5HQX> Alert: Spread (${mexcData.spread.toFixed(3)}%) is above 0.6%.`;
+    // Add alert block if there are alerts
+    if (alertBlock) {
+      message.blocks.push(alertBlock);
+      message.blocks.push({
+        "type": "divider"
+      });
     }
 
+    // Add metrics block
+    message.blocks.push({
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": `*Current Metrics:*\n
+• Spread: ${mexcData.spread.toFixed(3)}%
+• +2% Depth: $${mexcData.plusTwoPercent.toFixed(2)}
+• -2% Depth: $${mexcData.minusTwoPercent.toFixed(2)}
+• 24h Volume: $${mexcData.volume.toLocaleString()}`
+      }
+    });
+
+    // Add timestamp
+    message.blocks.push({
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": `Last updated: ${new Date().toUTCString()}`
+        }
+      ]
+    });
+
     // Send to Slack
-    const webhook = "https://hooks.slack.com/services/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";
+    const webhook = "https://hooks.slack.com/services/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";
     var options = {
       "method": "post",
       "contentType": "application/json",
@@ -774,36 +840,10 @@ function sendMEXCHourlyUpdate() {
     };
 
     UrlFetchApp.fetch(webhook, options);
-    Logger.log('MEXC hourly update sent successfully');
-
-    // Send alert if conditions are met
-    if (alertMessage) {
-      let alert = {
-        "text": alertMessage,
-        "blocks": [
-          {
-            "type": "section",
-            "text": {
-              "type": "mrkdwn",
-              "text": alertMessage
-            }
-          }
-        ]
-      };
-
-      var alertOptions = {
-        "method": "post",
-        "contentType": "application/json",
-        "muteHttpExceptions": true,
-        "payload": JSON.stringify(alert)
-      };
-
-      UrlFetchApp.fetch(webhook, alertOptions);
-      Logger.log('Alert sent successfully');
-    }
+    Logger.log('MEXC update sent successfully');
     
   } catch(error) {
-    Logger.log('Error sending MEXC hourly update: ' + error);
+    Logger.log('Error sending MEXC update: ' + error);
   }
 }
 
@@ -909,45 +949,83 @@ function sendASCENDEXHourlyUpdate() {
     // Fetch Bitget data
     const ascendexData = fetchAscendEXData('ROUTE/USDT');
     
+    // Check alert conditions
+    const alerts = [];
+    if (ascendexData.plusTwoPercent < 1000 || ascendexData.minusTwoPercent < 1000) {
+      alerts.push("⚠️ Depth Alert: 2% depth has fallen below $1,000");
+    }
+    if (ascendexData.volume < 100000) {
+      alerts.push("⚠️ Volume Alert: 24h volume has fallen below $100,000");
+    }
+    if (ascendexData.spread > 1) {
+      alerts.push("⚠️ Spread Alert: Spread has gone above 1%");
+    }
+
+    // Create alert message if conditions are met
+    let alertBlock = null;
+    if (alerts.length > 0) {
+      alertBlock = {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": `<@U078VJU5HQX>\n${alerts.join('\n')}`
+        }
+      };
+    }
+    
     // Format the message with metrics
     let message = {
-      "text": "ASCENDEX Hourly Update",
+      "text": alerts.length > 0 ? "🚨 Ascendex Alert" : "Ascendex Hourly Update",
       "blocks": [
         {
           "type": "section",
           "text": {
             "type": "mrkdwn",
-            "text": ":chart_with_upwards_trend: *ASCENDEX Hourly Market Update* :chart_with_upwards_trend:"
+            "text": alerts.length > 0 
+              ? "🚨 *Ascendex Alert Update* 🚨"
+              : ":chart_with_upwards_trend: *Ascendex Hourly Market Update* :chart_with_upwards_trend:"
           }
         },
         {
           "type": "divider"
-        },
-        {
-          "type": "section",
-          "text": {
-            "type": "mrkdwn",
-            "text": `*Current Metrics:*\n
-• Spread: ${ascendexData.spread.toFixed(3)}%
-• +2% Depth: $${ascendexData.plusTwoPercent.toFixed(2)}
-• -2% Depth: $${ascendexData.minusTwoPercent.toFixed(2)}
-• 24h Volume: $${ascendexData.volume.toLocaleString()}`
-          }
-        },
-        {
-          "type": "context",
-          "elements": [
-            {
-              "type": "mrkdwn",
-              "text": `Last updated: ${new Date().toUTCString()}`
-            }
-          ]
         }
       ]
     };
 
+    // Add alert block if there are alerts
+    if (alertBlock) {
+      message.blocks.push(alertBlock);
+      message.blocks.push({
+        "type": "divider"
+      });
+    }
+
+    // Add metrics block
+    message.blocks.push({
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": `*Current Metrics:*\n
+• Spread: ${ascendexData.spread.toFixed(3)}%
+• +2% Depth: $${ascendexData.plusTwoPercent.toFixed(2)}
+• -2% Depth: $${ascendexData.minusTwoPercent.toFixed(2)}
+• 24h Volume: $${ascendexData.volume.toLocaleString()}`
+      }
+    });
+
+    // Add timestamp
+    message.blocks.push({
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": `Last updated: ${new Date().toUTCString()}`
+        }
+      ]
+    });
+
     // Send to Slack
-    const webhook = "https://hooks.slack.com/services/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";
+    const webhook = "https://hooks.slack.com/services/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";
     var options = {
       "method": "post",
       "contentType": "application/json",
@@ -956,10 +1034,10 @@ function sendASCENDEXHourlyUpdate() {
     };
 
     UrlFetchApp.fetch(webhook, options);
-    Logger.log('ASCENDEX hourly update sent successfully');
+    Logger.log('Ascendex update sent successfully');
     
   } catch(error) {
-    Logger.log('Error sending ASCENDEX hourly update: ' + error);
+    Logger.log('Error sending Ascendex update: ' + error);
   }
 }
 
@@ -968,45 +1046,83 @@ function sendGATEHourlyUpdate() {
     // Fetch Bitget data
     const gateData = fetchGateData('ROUTE_USDT');
     
+    // Check alert conditions
+    const alerts = [];
+    if (gateData.plusTwoPercent < 1500 || gateData.minusTwoPercent < 1500) {
+      alerts.push("⚠️ Depth Alert: 2% depth has fallen below $1,500");
+    }
+    if (gateData.volume < 90000) {
+      alerts.push("⚠️ Volume Alert: 24h volume has fallen below $90,000");
+    }
+    if (gateData.spread > 0.6) {
+      alerts.push("⚠️ Spread Alert: Spread has gone above 0.6%");
+    }
+
+    // Create alert message if conditions are met
+    let alertBlock = null;
+    if (alerts.length > 0) {
+      alertBlock = {
+        "type": "section",
+        "text": {
+          "type": "mrkdwn",
+          "text": `<@U078VJU5HQX>\n${alerts.join('\n')}`
+        }
+      };
+    }
+    
     // Format the message with metrics
     let message = {
-      "text": "GATE Hourly Update",
+      "text": alerts.length > 0 ? "🚨 Gate Alert" : "Gate Hourly Update",
       "blocks": [
         {
           "type": "section",
           "text": {
             "type": "mrkdwn",
-            "text": ":chart_with_upwards_trend: *GATE Hourly Market Update* :chart_with_upwards_trend:"
+            "text": alerts.length > 0 
+              ? "🚨 *Gate Alert Update* 🚨"
+              : ":chart_with_upwards_trend: *Gate Hourly Market Update* :chart_with_upwards_trend:"
           }
         },
         {
           "type": "divider"
-        },
-        {
-          "type": "section",
-          "text": {
-            "type": "mrkdwn",
-            "text": `*Current Metrics:*\n
-• Spread: ${gateData.spread.toFixed(3)}%
-• +2% Depth: $${gateData.plusTwoPercent.toFixed(2)}
-• -2% Depth: $${gateData.minusTwoPercent.toFixed(2)}
-• 24h Volume: $${gateData.volume.toLocaleString()}`
-          }
-        },
-        {
-          "type": "context",
-          "elements": [
-            {
-              "type": "mrkdwn",
-              "text": `Last updated: ${new Date().toUTCString()}`
-            }
-          ]
         }
       ]
     };
 
+    // Add alert block if there are alerts
+    if (alertBlock) {
+      message.blocks.push(alertBlock);
+      message.blocks.push({
+        "type": "divider"
+      });
+    }
+
+    // Add metrics block
+    message.blocks.push({
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": `*Current Metrics:*\n
+• Spread: ${gateData.spread.toFixed(3)}%
+• +2% Depth: $${gateData.plusTwoPercent.toFixed(2)}
+• -2% Depth: $${gateData.minusTwoPercent.toFixed(2)}
+• 24h Volume: $${gateData.volume.toLocaleString()}`
+      }
+    });
+
+    // Add timestamp
+    message.blocks.push({
+      "type": "context",
+      "elements": [
+        {
+          "type": "mrkdwn",
+          "text": `Last updated: ${new Date().toUTCString()}`
+        }
+      ]
+    });
+
     // Send to Slack
-    const webhook = "https://hooks.slack.com/services/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";
+    const webhook = "https://hooks.slack.com/services/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";
     var options = {
       "method": "post",
       "contentType": "application/json",
@@ -1015,10 +1131,10 @@ function sendGATEHourlyUpdate() {
     };
 
     UrlFetchApp.fetch(webhook, options);
-    Logger.log('GATE hourly update sent successfully');
+    Logger.log('Gate update sent successfully');
     
   } catch(error) {
-    Logger.log('Error sending GATE hourly update: ' + error);
+    Logger.log('Error sending Gate update: ' + error);
   }
 }
 
