@@ -2,7 +2,7 @@
 function fetchTotalStakedROUTE() {
   try {
     const response = UrlFetchApp.fetch(
-      'https://hub.routerprotocol.com/_next/data/eSrTaEKYllhgTmyFMKzoz/staking.json',
+      'https://hub.routerprotocol.com/_next/data/UKpFlD_rehphUPcO4uJNK/staking.json',
       { muteHttpExceptions: true }
     );
     
