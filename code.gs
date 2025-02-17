@@ -982,62 +982,6 @@ function sendKucoinHourlyUpdate() {
   }
 }
 
-function sendKucoinHourlyTelegramUpdate() {
-  try {
-    // Fetch KuCoin data
-    const kuCoinData = fetchKuCoinData('ROUTE-USDT');
-    
-    // Check alert conditions
-    const alerts = [];
-    if (kuCoinData.plusTwoPercent < 2000 || kuCoinData.minusTwoPercent < 2000) {
-      alerts.push("⚠️ Depth Alert: 2% depth has fallen below $2,000");
-    }
-    if (kuCoinData.volume < 40000) {
-      alerts.push("⚠️ Volume Alert: 24h volume has fallen below $40,000");
-    }
-    if (kuCoinData.spread > 0.4) {
-      alerts.push("⚠️ Spread Alert: Spread has gone above 0.4%");
-    }
-
-    // Create alert message if conditions are met
-    let alertMessage = alerts.length > 0 ? "🚨 *KuCoin Alert Update* 🚨\n" : ":chart_with_upwards_trend: *KuCoin Hourly Market Update* :chart_with_upwards_trend:\n";
-    if (alerts.length > 0) {
-      alertMessage += alerts.join('\n') + '\n\n';
-    }
-
-    // Add metrics block
-    alertMessage += `*Current Metrics:*\n
-• Spread: ${kuCoinData.spread.toFixed(3)}%
-• +2% Depth: $${kuCoinData.plusTwoPercent.toFixed(2)}
-• -2% Depth: $${kuCoinData.minusTwoPercent.toFixed(2)}
-• 24h Volume: $${kuCoinData.volume.toLocaleString()}\n\n`;
-
-    // Add timestamp
-    alertMessage += `Last updated: ${new Date().toUTCString()}`;
-
-    // Send to Telegram
-    const telegramToken = "7433203469:AAF5-4F2D7NSEdpnJbM-dGfI5J5x_Vb5T40";
-    const chatId = "-1002346321862"; // Replace with the group chat ID
-    const telegramUrl = `https://api.telegram.org/bot${telegramToken}/sendMessage`;
-
-    const options = {
-      method: "post",
-      contentType: "application/json",
-      payload: JSON.stringify({
-        chat_id: chatId,
-        text: alertMessage,
-        parse_mode: "Markdown" // Use Markdown for formatting
-      })
-    };
-
-    UrlFetchApp.fetch(telegramUrl, options);
-    Logger.log('KuCoin update sent successfully to Telegram');
-    
-  } catch(error) {
-    Logger.log('Error sending KuCoin update: ' + error);
-  }
-}
-
 function sendASCENDEXHourlyUpdate() {
   try {
     // Fetch Bitget data
@@ -1247,6 +1191,101 @@ function createHourlyTrigger() {
       .timeBased()
       .everyHours(1)
       .create();
+}
+
+function sendTelegramHourlyUpdate() {
+  const exchanges = [
+    {
+      name: "Bitget",
+      pair: "ROUTEUSDT",
+      fetchFunction: fetchBitgetData,
+      alerts: [
+        { condition: (data) => data.volume < 85000, message: "⚠️ Volume Alert: 24h volume has fallen below $85,000" }
+      ]
+    },
+    {
+      name: "HTX",
+      pair: "routeusdt",
+      fetchFunction: fetchHTXData,
+      alerts: [
+        { condition: (data) => data.volume < 100000, message: "⚠️ Volume Alert: 24h volume has fallen below $100,000" }
+      ]
+    },
+    {
+      name: "MEXC",
+      pair: "ROUTEUSDT",
+      fetchFunction: fetchMEXCData,
+      alerts: [
+        { condition: (data) => data.volume < 150000, message: "⚠️ Volume Alert: 24h volume has fallen below $150,000" }
+      ]
+    },
+    {
+      name: "KuCoin",
+      pair: "ROUTE-USDT",
+      fetchFunction: fetchKuCoinData,
+      alerts: [
+        { condition: (data) => data.volume < 40000, message: "⚠️ Volume Alert: 24h volume has fallen below $40,000" }
+      ]
+    },
+    {
+      name: "AscendEX",
+      pair: "ROUTE/USDT",
+      fetchFunction: fetchAscendEXData,
+      alerts: [
+        { condition: (data) => data.volume < 100000, message: "⚠️ Volume Alert: 24h volume has fallen below $100,000" }
+      ]
+    },
+    {
+      name: "Gate",
+      pair: "ROUTE_USDT",
+      fetchFunction: fetchGateData,
+      alerts: [
+        { condition: (data) => data.volume < 90000, message: "⚠️ Volume Alert: 24h volume has fallen below $90,000" }
+      ]
+    }
+  ];
+
+  const telegramToken = "7856587450:AAGkXL8r4lAote0M2v2Fphb1G7EJvbuC5O4";
+  const chatId = "-1002389501151"; // Replace with the group chat ID
+
+  exchanges.forEach(exchange => {
+    try {
+      // Fetch data for the exchange
+      const data = exchange.fetchFunction(exchange.pair);
+
+      // Check alert conditions
+      const alerts = exchange.alerts
+        .filter(alert => alert.condition(data))
+        .map(alert => alert.message);
+
+      // Format the message
+      let message = alerts.length > 0
+        ? `🚨 *${exchange.name} Alert Update* 🚨\n${alerts.join('\n')}\n\n`
+        : `*${exchange.name} Hourly Market Update* \n\n`;
+
+      message += `*Current Metrics:*\n
+• 24h Volume: $${data.volume.toLocaleString()}\n\n`;
+
+      message += `Last updated: ${new Date().toUTCString()}`;
+
+      // Send to Telegram
+      const telegramUrl = `https://api.telegram.org/bot${telegramToken}/sendMessage`;
+      const options = {
+        method: "post",
+        contentType: "application/json",
+        payload: JSON.stringify({
+          chat_id: chatId,
+          text: message,
+          parse_mode: "Markdown"
+        })
+      };
+
+      UrlFetchApp.fetch(telegramUrl, options);
+      Logger.log(`${exchange.name} update sent successfully to Telegram`);
+    } catch (error) {
+      Logger.log(`Error sending ${exchange.name} update: ${error}`);
+    }
+  });
 }
 
 function getCEXData(cexName) {
