@@ -675,7 +675,7 @@ function sendBitgetHourlyUpdate() {
     });
 
     // Send to Slack
-    const webhook = "https://hooks.slack.com/services/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";
+    const webhook = "";
     var options = {
       "method": "post",
       "contentType": "application/json",
@@ -772,7 +772,7 @@ function sendHTXHourlyUpdate() {
     });
 
     // Send to Slack
-    const webhook = "https://hooks.slack.com/services/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";
+    const webhook = "";
     var options = {
       "method": "post",
       "contentType": "application/json",
@@ -869,7 +869,7 @@ function sendMEXCHourlyUpdate() {
     });
 
     // Send to Slack
-    const webhook = "https://hooks.slack.com/services/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";
+    const webhook = "";
     var options = {
       "method": "post",
       "contentType": "application/json",
@@ -966,7 +966,7 @@ function sendKucoinHourlyUpdate() {
     });
 
     // Send to Slack
-    const webhook = "https://hooks.slack.com/services/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";
+    const webhook = "";
     var options = {
       "method": "post",
       "contentType": "application/json",
@@ -1063,7 +1063,7 @@ function sendASCENDEXHourlyUpdate() {
     });
 
     // Send to Slack
-    const webhook = "https://hooks.slack.com/services/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";
+    const webhook = "";
     var options = {
       "method": "post",
       "contentType": "application/json",
@@ -1160,7 +1160,7 @@ function sendGATEHourlyUpdate() {
     });
 
     // Send to Slack
-    const webhook = "https://hooks.slack.com/services/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";
+    const webhook = "";
     var options = {
       "method": "post",
       "contentType": "application/json",
